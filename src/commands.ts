@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { Card } from "./card";
-import { CardDB } from "./card_db";
+import { Card } from './card';
+import { CardDB } from './card_db';
 
 function getHTMLImagesLine(card: Card): string | undefined {
     let oracleText = card.oracleText ?
@@ -14,10 +14,39 @@ function getHTMLImagesLine(card: Card): string | undefined {
         card.cardFaces?.map(cardFace => `<img src="${cardFace.imageUris?.small}" alt="image of ${cardFace.name}" title="${cardFace.oracleText?.replace(/\"/g, "'")}"/>`).join('');
 }
 
-function getPriceLine(card: Card): string | undefined {
-    let usdPrice = `${card.prices?.usd ? card.prices?.usd : card.prices?.usdFoil ? card.prices?.usdFoil : ' - '}`;
-    let eurPrice = `${card.prices?.eur ? card.prices?.eur : card.prices?.eurFoil ? card.prices?.eurFoil : ' - '}`;
-    return `<p><b>Price: </b>$${usdPrice} / ${eurPrice}€</p>`;
+export function getUsdPrice(card: Card, foil: boolean=false): string | null {
+    if (card.prices?.usdFoil && (foil || (card.prices?.usd == null)))
+        return card.prices?.usdFoil;
+    else if (card.prices?.usd)
+        return card.prices?.usd;
+    return null
+}
+
+export function getEurPrice(card: Card, foil: boolean=false): string | null {
+    if (card.prices?.eurFoil && (foil || (card.prices?.eur == null)))
+        return card.prices?.eurFoil;
+    else if (card.prices?.eur)
+        return card.prices?.eur;
+    return null
+}
+
+export function getPrices(card: Card, foil: boolean=false): string {
+    if (card.prices) {
+        const usdPrice = getUsdPrice(card, foil);
+        const eurPrice = getEurPrice(card, foil);
+
+        var priceLine = "";
+        if (usdPrice) {
+            priceLine += `$${usdPrice}`;
+            if (eurPrice)
+                priceLine += " / ";
+        }
+        if (eurPrice)
+            priceLine += `${eurPrice}€`;
+
+        return priceLine ? priceLine : "n/a";
+    }
+    return "n/a";
 }
 
 export function searchCards(cardDB: CardDB) {
@@ -38,7 +67,7 @@ export function searchCards(cardDB: CardDB) {
 
             let searchDocumentContent = `<h1>Search: ${searchStr}</h1>${cards.map((card) => {
                 let imagesLine = getHTMLImagesLine(card);
-                let priceLine = getPriceLine(card);
+                let priceLine = `<p><b>Price:</b> ${getPrices(card)}</p>`
                 return `<h2 style="padding-top: 12px;">${card.name}</h2>${imagesLine}${priceLine}`;
             }).join('')}`;
 

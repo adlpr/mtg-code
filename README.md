@@ -1,11 +1,11 @@
 # mtg-code
 
-This is an extension for building Magic the Gathering decks in VSCode. 
+This is an extension for building Magic the Gathering decks in VSCode.
 ## Features
 
 * Autocompletion while typing card names. Also adds basic information about each card in your decklist.
 * Displays a card preview and price information when hovering a card.
-* Search for cards using scryfall's [advanced query api](https://scryfall.com/docs/syntax). 
+* Search for cards using scryfall's [advanced query api](https://scryfall.com/docs/syntax).
 * Provides syntax highlighting for search queries and autocompletion for query terms and for some query parameter values.
 * Easily count your cards by selecting lines.
 
@@ -14,6 +14,12 @@ This is an extension for building Magic the Gathering decks in VSCode.
 ## Known Issues
 
 ## Release Notes
+
+### 1.1.0
+
+* Add handling for set code, collector number, language, and foil
+* Hover image now links to card page on Scryfall
+* Lines can be prefixed ("SB:" etc.)
 
 ### 1.0.0
 

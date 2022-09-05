@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { CardDB } from './card_db';
 import { Card } from './card';
+import { CardDB } from './card_db';
+import { getPrices } from './commands';
 
 function getMarkdownImagesLine(card: Card): string | undefined {
     let oracleText = card.oracleText ?
@@ -13,12 +14,6 @@ function getMarkdownImagesLine(card: Card): string | undefined {
         card.cardFaces?.map(cardFace => `![image of ${cardFace.name}](${cardFace.imageUris?.small} "${cardFace.oracleText?.replace(/\"/g, "'")}")`).join('');
 
     return `[${markdownImagesLine}](${card.scryfallURI})`
-}
-
-function getPriceLine(card: Card): string | undefined {
-    let usdPrice = `${card.prices?.usd ? card.prices?.usd : card.prices?.usdFoil ? card.prices?.usdFoil : ' - '}`;
-    let eurPrice = `${card.prices?.eur ? card.prices?.eur : card.prices?.eurFoil ? card.prices?.eurFoil : ' - '}`;
-    return `**Price:** $${usdPrice}$ / ${eurPrice}€`;
 }
 
 export class CardHoverProvider implements vscode.HoverProvider {
@@ -45,7 +40,7 @@ export class CardHoverProvider implements vscode.HoverProvider {
         try {
             let card = await this.cardDB.getCard(cardName, search[3], search[4], cardLang);
             let imagesLine = getMarkdownImagesLine(card);
-            let priceLine = getPriceLine(card);
+            let priceLine = `**Price:** ${getPrices(card)}`;
             return new vscode.Hover(new vscode.MarkdownString(`${imagesLine}\n\n${priceLine}`));
         }
         catch (e) {
@@ -79,7 +74,7 @@ export class CardSearchHoverProvider implements vscode.HoverProvider {
             let cards = await Promise.all(cardNames.map(cardName => this.cardDB.getCard(cardName)));
             let cardLines = cards.map((card) => {
                 let imagesLine = getMarkdownImagesLine(card);
-                let priceLine = getPriceLine(card);
+                let priceLine = getPrices(card);
                 return `### ${card.name}\n\n${imagesLine}\n\n${priceLine}`;
             });
             return new vscode.Hover(new vscode.MarkdownString(cardLines.join('\n\n')));

@@ -2,6 +2,7 @@ import { info } from 'console';
 import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
+import { getUsdPrice } from './commands';
 import { lineSplitterRegExp, cardLineRegExp } from './regular_expressions';
 
 const cardDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({});
@@ -65,13 +66,8 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
                 infos.push(`${card.power}/${card.toughness}`);
             }
             if (card.prices) {
-                var priceLine = "$na";
-                if ((/^[^\[]+\s\[[^\]]+\bfoil\b/.exec(line) && (card.prices.usdFoil !== null))
-                    || (card.prices.usd == null && card.prices.usdFoil !== null))
-                    priceLine = `$${card.prices.usdFoil}`;
-                else if (card.prices.usd !== null)
-                    priceLine = `$${card.prices.usd}`;
-                infos.push(priceLine);
+                const usdPrice = getUsdPrice(card, !!/\bfoil\b/.exec(search[6]));
+                infos.push(usdPrice ? `$${usdPrice}` : "$na");
             }
             const infoStr = infos.join(' · ');
 
