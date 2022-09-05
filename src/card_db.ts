@@ -157,35 +157,51 @@ export class CardDB {
         this.setNames = setsResp['data'].map((set: any) => set['name']);
     }
 
-    async getCard(cardName: string): Promise<Card> {
-        const card = this.cards.get(cardName);
-        if (card === undefined) {
+    async getCard(cardName: string, setCode: string="", collectorNumber: string="", lang: string=""): Promise<Card> {
+        var card = this.cards.get(cardName);
+        if (card === undefined && !(setCode && collectorNumber))
             throw Error('card not found');
+        const cardKeyStr = `${cardName}\t${setCode}\t${collectorNumber}\t${lang}`.trim();
+        card = this.cards.get(cardKeyStr);
+        // for query with set code and collno, try name wildcard
+        const nameWildCardKeyStr = `*\t${setCode}\t${collectorNumber}\t${lang}`.trim();
+        if ((card === undefined || card === null) && setCode && collectorNumber) {
+            card = this.cards.get(nameWildCardKeyStr);
         }
 
-        if (card === null) {
+        if (card === undefined || card === null) {
             var cardJSONStr: string = '';
             try {
-                const cardResp = await request.get('https://api.scryfall.com/cards/named', { qs: { exact: cardName }, throwResponseError: true });
+                var cardResp;
+                // if only cardName and optional setCode, use /named endpt
+                if (!collectorNumber || (collectorNumber && !setCode)) {
+                    var params: any = { exact: cardName };
+                    if (setCode)
+                        params["set"] = setCode;
+                    cardResp = await request.get('https://api.scryfall.com/cards/named', { qs: params, throwResponseError: true });
+                } else {
+                    // for lines with collector numbers, use /:code/:number endpt
+                    var url = `https://api.scryfall.com/cards/${setCode}/${collectorNumber}`;
+                    if (lang)
+                        url += '/' + lang;
+                    cardResp = await request.get(url, { throwResponseError: true });
+                }
                 cardJSONStr = cardResp.content;
-            }
-            catch (e) {
+            } catch (e) {
                 throw Error(`request to scryfall api failed: ${e}`);
             }
-
             var newCard: Card;
             try {
                 newCard = Convert.toCard(cardJSONStr);
-            }
-            catch (e) {
+            } catch (e) {
                 throw Error(`failed to parse card information from scryfall api: ${e}\n\nJSON String:\n\n${cardJSONStr}`);
             }
-
-            this.cards.set(cardName, newCard);
+            this.cards.set(cardKeyStr, newCard);
+            if (setCode && collectorNumber)
+                this.cards.set(nameWildCardKeyStr, newCard);
             return newCard;
-        }
-
-        return card;
+        } else
+            return card;
     }
 
     searchCardNamesFuzzy(searchStr: string): fuzzy.FilterResult<string>[] {

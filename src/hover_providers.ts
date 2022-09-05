@@ -8,16 +8,17 @@ function getMarkdownImagesLine(card: Card): string | undefined {
         card.cardFaces ?
             card.cardFaces.map(cardFace => cardFace.oracleText ? cardFace.oracleText.replace(/\"/g, "'") : '').join('\n//\n')
             : 'no oracle text';
-
-    return card.imageUris ?
+    var markdownImagesLine = card.imageUris ?
         `![image of ${card.name}](${card.imageUris?.small} "${oracleText}")` :
         card.cardFaces?.map(cardFace => `![image of ${cardFace.name}](${cardFace.imageUris?.small} "${cardFace.oracleText?.replace(/\"/g, "'")}")`).join('');
+
+    return `[${markdownImagesLine}](${card.scryfallURI})`
 }
 
 function getPriceLine(card: Card): string | undefined {
     let usdPrice = `${card.prices?.usd ? card.prices?.usd : card.prices?.usdFoil ? card.prices?.usdFoil : ' - '}`;
     let eurPrice = `${card.prices?.eur ? card.prices?.eur : card.prices?.eurFoil ? card.prices?.eurFoil : ' - '}`;
-    return `**Price:** ${usdPrice}$ / ${eurPrice}€`;
+    return `**Price:** $${usdPrice}$ / ${eurPrice}€`;
 }
 
 export class CardHoverProvider implements vscode.HoverProvider {
@@ -32,16 +33,17 @@ export class CardHoverProvider implements vscode.HoverProvider {
         position: vscode.Position,
         token: vscode.CancellationToken):
         Promise<vscode.Hover> {
-        let regexp: RegExp = /^(\d+) +(.+)$/;
+        let regexp: RegExp = /^(?:\w+: )?(\d+)\s+([^\[]+)(?:\s+\[([^\]\s]+)(?:\s+([^\]\s]+)(?:\s+([^\]\s]+).*)?)?\])?$/;
         let search = regexp.exec(document.lineAt(position.line).text);
 
-        if (!search || search.length < 3) {
+        if (!search || search.length < 6) {
             return new vscode.Hover('');
         }
 
-        let cardName = search[2].trim();
+        const cardName = search[2].trim();
+        const cardLang = search[5];
         try {
-            let card = await this.cardDB.getCard(cardName);
+            let card = await this.cardDB.getCard(cardName, search[3], search[4], cardLang);
             let imagesLine = getMarkdownImagesLine(card);
             let priceLine = getPriceLine(card);
             return new vscode.Hover(new vscode.MarkdownString(`${imagesLine}\n\n${priceLine}`));

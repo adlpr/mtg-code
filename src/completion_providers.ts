@@ -4,7 +4,7 @@ import * as fuzzy from 'fuzzy';
 
 export class CardCompletionItemProvider implements vscode.CompletionItemProvider {
     cardDB: CardDB;
-    lineRegexp: RegExp = new RegExp('^(\\d+ )(.*)$');
+    lineRegexp: RegExp = /^(?:\w+: )?(\d+ )(.*)$/;
     constructor(cardDB: CardDB) {
         this.cardDB = cardDB;
     }

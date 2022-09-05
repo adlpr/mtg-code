@@ -17,7 +17,7 @@ function getHTMLImagesLine(card: Card): string | undefined {
 function getPriceLine(card: Card): string | undefined {
     let usdPrice = `${card.prices?.usd ? card.prices?.usd : card.prices?.usdFoil ? card.prices?.usdFoil : ' - '}`;
     let eurPrice = `${card.prices?.eur ? card.prices?.eur : card.prices?.eurFoil ? card.prices?.eurFoil : ' - '}`;
-    return `<p><b>Price: </b>${usdPrice}$ / ${eurPrice}€</p>`;
+    return `<p><b>Price: </b>$${usdPrice} / ${eurPrice}€</p>`;
 }
 
 export function searchCards(cardDB: CardDB) {

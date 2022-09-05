@@ -40,7 +40,7 @@
 		"complete_cardlines": {
 			"patterns": [
 				{
-					"match": "(\\d+) +((?:(\\/\\/)|[^\\/]+)+)",
+					"match": "(?:\\w+: )?(\\d+) +((?:(\\/\\/)|[^\\/]+)+)",
 					"captures": {
 						"1": {
 							"name": "constant.numeric.mtg"

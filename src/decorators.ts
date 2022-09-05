@@ -21,19 +21,33 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
             });
 
             const search = cardLineRegExp.exec(line);
-            if (!search || search.length !== 3) {
+            // $1: count; $2: name; $3: set;
+            // $4: collno; $5: lang; $6: foil and misc info
+            if (!search || search.length !== 6)
                 continue;
-            }
 
             let card: Card;
+            const cardName = search[2].trim();
+            const cardLang = search[5];
             try {
-                card = await cardDB.getCard(search[2]);
+                card = await cardDB.getCard(cardName, search[3], search[4], cardLang);
             }
             catch (e) {
                 continue;
             }
 
             const infos: string[] = [];
+            // if match yielded from set/collno but name doesn't match, add to decoration
+            if (cardName != card.name) {
+                infos.push(`${card.name}`);
+            }
+            // if no [set collno] specified, add to decoration
+            if (!search[4]) {
+                if (!search[3])
+                    infos.push(`[${card.set} ${card.collectorNumber}]`);
+                else
+                    infos.push(`[${card.collectorNumber}]`);
+            }
             if (card.manaCost) {
                 infos.push(card.manaCost);
             } else if (card.cardFaces) {
@@ -50,7 +64,16 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
             if (card.power || card.toughness) {
                 infos.push(`${card.power}/${card.toughness}`);
             }
-            const infoStr: string = infos.join(' | ');
+            if (card.prices) {
+                var priceLine = "$na";
+                if ((/^[^\[]+\s\[[^\]]+\bfoil\b/.exec(line) && (card.prices.usdFoil !== null))
+                    || (card.prices.usd == null && card.prices.usdFoil !== null))
+                    priceLine = `$${card.prices.usdFoil}`;
+                else if (card.prices.usd !== null)
+                    priceLine = `$${card.prices.usd}`;
+                infos.push(priceLine);
+            }
+            const infoStr = infos.join(' · ');
 
             decorations.push(
                 {
