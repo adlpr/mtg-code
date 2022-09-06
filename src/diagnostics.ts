@@ -2,7 +2,8 @@
 import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
-import { lineSplitterRegExp, cardLineRegExp } from './regular_expressions';
+import { parseCardLine } from './card_statistics';
+import { lineSplitterRegExp } from './regular_expressions';
 
 export const UNKNOWN_CARD_CODE: string = 'unknown_card';
 
@@ -20,19 +21,14 @@ export async function refreshCardDiagnostics(document: vscode.TextDocument, card
                 increment: (lineNum / lines.length) * 100.0
             });
 
-            const search = cardLineRegExp.exec(line);
-            if (!search || search.length !== 7) {
+            try {
+                var cardLine = await parseCardLine(line, cardDB);
+            } catch (e) {
                 continue;
             }
 
-            let card: Card;
-            try {
-                card = await cardDB.getCard(search[2]);
-            }
-            catch (e) {
-                const beginAt = line.indexOf(search[2]);
-                const range = new vscode.Range(new vscode.Position(lineNum, beginAt), document.lineAt(lineNum).range.end);
-                const diagnostic = new vscode.Diagnostic(range, `Unknown card '${search[2]}'.`, vscode.DiagnosticSeverity.Warning);
+            if (!cardLine.card) {
+                const diagnostic = new vscode.Diagnostic(document.lineAt(lineNum).range, `Unknown card: ${cardLine.name}`, vscode.DiagnosticSeverity.Warning);
                 diagnostic.code = UNKNOWN_CARD_CODE;
                 diagnostics.push(diagnostic);
             }

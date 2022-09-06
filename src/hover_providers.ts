@@ -32,9 +32,8 @@ export class CardHoverProvider implements vscode.HoverProvider {
 
         try {
             var cardLine = await parseCardLine(document.lineAt(position.line).text, this.cardDB);
-        }
-        catch (e) {
-            return new vscode.Hover('');
+        } catch (e) {
+            return new vscode.Hover(new vscode.MarkdownString(''));
         }
 
         const card = cardLine.card;
@@ -42,8 +41,7 @@ export class CardHoverProvider implements vscode.HoverProvider {
             let imagesLine = getMarkdownImagesLine(card);
             let priceLine = `**Price:** ${getPrices(card)}`;
             return new vscode.Hover(new vscode.MarkdownString(`${imagesLine}\n\n${priceLine}`));
-        }
-        catch (e) {
+        } catch (e) {
             return new vscode.Hover(new vscode.MarkdownString(`failed to get card from card database: ${e}`));
         }
     }
@@ -78,8 +76,7 @@ export class CardSearchHoverProvider implements vscode.HoverProvider {
                 return `### ${card.name}\n\n${imagesLine}\n\n${priceLine}`;
             });
             return new vscode.Hover(new vscode.MarkdownString(cardLines.join('\n\n')));
-        }
-        catch (e) {
+        } catch (e) {
             return new vscode.Hover(new vscode.MarkdownString(`searching cards failed: ${e}`));
         }
     }

@@ -9,7 +9,7 @@ import * as vscode from 'vscode';
 import { CardDB } from './card_db';
 import { CardLine, getNumberOfCards, parseCardLine } from './card_statistics';
 import { CardSearchLensProvider } from './code_lens_providers';
-import { searchCards } from './commands';
+import { fixCardNames, searchCards } from './commands';
 import { CardCompletionItemProvider, SearchCompletionItemProvider } from './completion_providers';
 import { setCardDecorations } from './decorators';
 import { CardHoverProvider } from './hover_providers';
@@ -27,6 +27,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	await cardDB.isReady;
 
 	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.search-cards', searchCards(cardDB)));
+	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.fix-card-names', fixCardNames(cardDB)));
 
 	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz '\":/<>=".split("");
 
@@ -89,7 +90,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			for (let l = selection.start.line; l <= selection.end.line; l++) {
 				const lineStr = e.textEditor.document.lineAt(l).text;
 				try {
-					const cardLine = await parseCardLine(lineStr, cardDB);
+					var cardLine = await parseCardLine(lineStr, cardDB);
 					cardLines.push(cardLine);
 				}
 				catch (e) {

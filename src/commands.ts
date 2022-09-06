@@ -1,6 +1,9 @@
+import { execPath } from 'process';
 import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
+import { parseCardLine } from './card_statistics';
+import { lineSplitterRegExp, cardNameReplaceExp } from './regular_expressions';
 
 function getHTMLImagesLine(card: Card): string | undefined {
     let oracleText = card.oracleText ?
@@ -88,4 +91,39 @@ export function searchCards(cardDB: CardDB) {
             panel.webview.html = searchDocumentContent;
         });
     };
+}
+
+
+export function fixCardNames(cardDB: CardDB) {
+    return async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor)
+            throw Error(`Could not get text editor`);
+
+        const document = editor.document;
+        const lines: string[] = document.getText().split(lineSplitterRegExp);
+        for (const [lineNum, line] of lines.entries()) {
+            console.log(`line ${lineNum}: ${line}`)
+            try {
+                var cardLine = await parseCardLine(line, cardDB);
+            } catch (e) {
+                console.log(`not card line`);
+                continue;
+            }
+
+            // name already correct
+            if (cardLine.name == cardLine.card.name) {
+                console.log(`already correct`);
+                continue;
+            }
+
+            const lineStr = document.lineAt(lineNum).text;
+            const lineRange = document.lineAt(lineNum).range;
+            console.log(`correcting at ${lineRange}`);
+
+            const newLineStr = lineStr.replace(cardNameReplaceExp, `$1${cardLine.card.name}$2`)
+
+            await editor.edit(edit => edit.replace(lineRange, newLineStr));
+        }
+    }
 }

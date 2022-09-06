@@ -13,7 +13,8 @@
 	],
 	"activationEvents": [
 		"onLanguage:mtg",
-		"onCommand:mtg-code.search-cards"
+		"onCommand:mtg-code.search-cards",
+		"onCommand:mtg-code.fix-card-names"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -40,6 +41,11 @@
 			{
 				"command": "mtg-code.search-cards",
 				"title": "Search Cards",
+				"category": "mtg"
+			},
+			{
+				"command": "mtg-code.fix-card-names",
+				"title": "Fix Card Names",
 				"category": "mtg"
 			}
 		]

@@ -17,8 +17,9 @@ This is an extension for building Magic the Gathering decks in VSCode.
 
 ### 1.1.0
 
-* Add handling for set code, collector number, language, and foil
-* Hover image now links to card page on Scryfall
+* Handling for set code, collector number, language, and foil
+* Command to fix card names based on set info
+* Hover image links to card page on Scryfall
 * Lines can be prefixed ("SB:" etc.)
 
 ### 1.0.0
