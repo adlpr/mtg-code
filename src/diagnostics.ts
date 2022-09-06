@@ -21,7 +21,7 @@ export async function refreshCardDiagnostics(document: vscode.TextDocument, card
             });
 
             const search = cardLineRegExp.exec(line);
-            if (!search || search.length !== 3) {
+            if (!search || search.length !== 7) {
                 continue;
             }
 
@@ -74,7 +74,7 @@ export class FixCardNameCodeActionProvider implements vscode.CodeActionProvider 
         const action = new vscode.CodeAction(`Change to '${bestMatch}'.`, vscode.CodeActionKind.QuickFix);
         action.diagnostics = [diagnostic];
         action.isPreferred = true;
-        
+
         const edit = new vscode.WorkspaceEdit();
         edit.replace(document.uri, diagnostic.range, bestMatch);
         action.edit = edit;

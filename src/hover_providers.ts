@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
+import { parseCardLine } from './card_statistics';
 import { getPrices } from './commands';
 
 function getMarkdownImagesLine(card: Card): string | undefined {
@@ -28,17 +29,16 @@ export class CardHoverProvider implements vscode.HoverProvider {
         position: vscode.Position,
         token: vscode.CancellationToken):
         Promise<vscode.Hover> {
-        let regexp: RegExp = /^(?:\w+: )?(\d+)\s+([^\[]+)(?:\s+\[([^\]\s]+)(?:\s+([^\]\s]+)(?:\s+([^\]\s]+).*)?)?\])?$/;
-        let search = regexp.exec(document.lineAt(position.line).text);
 
-        if (!search || search.length < 6) {
+        try {
+            var cardLine = await parseCardLine(document.lineAt(position.line).text, this.cardDB);
+        }
+        catch (e) {
             return new vscode.Hover('');
         }
 
-        const cardName = search[2].trim();
-        const cardLang = search[5];
+        const card = cardLine.card;
         try {
-            let card = await this.cardDB.getCard(cardName, search[3], search[4], cardLang);
             let imagesLine = getMarkdownImagesLine(card);
             let priceLine = `**Price:** ${getPrices(card)}`;
             return new vscode.Hover(new vscode.MarkdownString(`${imagesLine}\n\n${priceLine}`));

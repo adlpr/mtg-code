@@ -2,8 +2,9 @@ import { info } from 'console';
 import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
+import { parseCardLine } from './card_statistics';
 import { getUsdPrice } from './commands';
-import { lineSplitterRegExp, cardLineRegExp } from './regular_expressions';
+import { lineSplitterRegExp } from './regular_expressions';
 
 const cardDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({});
 
@@ -21,30 +22,22 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
                 increment: (lineNum / lines.length) * 100.0
             });
 
-            const search = cardLineRegExp.exec(line);
-            // $1: count; $2: name; $3: set;
-            // $4: collno; $5: lang; $6: foil and misc info
-            if (!search || search.length !== 6)
-                continue;
-
-            let card: Card;
-            const cardName = search[2].trim();
-            const cardLang = search[5];
             try {
-                card = await cardDB.getCard(cardName, search[3], search[4], cardLang);
+                var cardLine = await parseCardLine(line, cardDB);
             }
             catch (e) {
                 continue;
             }
 
+            const card = cardLine.card;
             const infos: string[] = [];
             // if match yielded from set/collno but name doesn't match, add to decoration
-            if (cardName != card.name) {
+            if (cardLine.name != card.name) {
                 infos.push(`${card.name}`);
             }
             // if no [set collno] specified, add to decoration
-            if (!search[4]) {
-                if (!search[3])
+            if (!cardLine.set) {
+                if (!cardLine.collectorNumber)
                     infos.push(`[${card.set} ${card.collectorNumber}]`);
                 else
                     infos.push(`[${card.collectorNumber}]`);
@@ -66,7 +59,7 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
                 infos.push(`${card.power}/${card.toughness}`);
             }
             if (card.prices) {
-                const usdPrice = getUsdPrice(card, !!/\bfoil\b/.exec(search[6]));
+                const usdPrice = getUsdPrice(card, !!/\bfoil\b/.exec(cardLine.miscInfo));
                 infos.push(usdPrice ? `$${usdPrice}` : "$na");
             }
             const infoStr = infos.join(' · ');
@@ -74,8 +67,8 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
             decorations.push(
                 {
                     range: new vscode.Range(
-                        new vscode.Position(lineNum, search[0].length),
-                        new vscode.Position(lineNum, search[0].length)
+                        new vscode.Position(lineNum, cardLine.lineStr.length),
+                        new vscode.Position(lineNum, cardLine.lineStr.length)
                     ),
                     renderOptions: {
                         after: {
