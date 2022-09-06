@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { CardDB } from './card_db';
 import * as fuzzy from 'fuzzy';
+import { cardLineRegExp } from './regular_expressions';
 
 export class CardCompletionItemProvider implements vscode.CompletionItemProvider {
     cardDB: CardDB;
-    lineRegexp: RegExp = /^(?:\w+: )?(\d+ )(.*)$/;
     constructor(cardDB: CardDB) {
         this.cardDB = cardDB;
     }
@@ -14,17 +14,19 @@ export class CardCompletionItemProvider implements vscode.CompletionItemProvider
         Promise<vscode.CompletionItem[]> {
         let line = document.lineAt(position.line);
         let lineStr = line.text;
-        let search = this.lineRegexp.exec(lineStr);
-        if (!search || search.length !== 3) {
+        const search = cardLineRegExp.exec(lineStr);
+        if (!search || search.length !== 7)
             return [];
-        }
 
         let insertAt = lineStr.search(search[2]);
 
         let matches = this.cardDB.searchCardNamesFuzzy(search[2]);
         return matches.map((res) => {
             let item: vscode.CompletionItem = new vscode.CompletionItem(res.string);
-            item.range = new vscode.Range(new vscode.Position(position.line, insertAt), line.range.end);
+            item.range = new vscode.Range(
+                new vscode.Position(position.line, insertAt),
+                new vscode.Position(position.line, insertAt+search[2].length)
+                );
             item.label = res.string;
             return item;
         });
