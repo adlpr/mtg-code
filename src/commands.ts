@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
 import { parseCardLine } from './card_statistics';
-import { lineSplitterRegExp, cardNameReplaceExp } from './regular_expressions';
+import { lineSplitterRegExp, cardNameReplaceExp, cardCollNoReplaceExp } from './regular_expressions';
 
 function getHTMLImagesLine(card: Card): string | undefined {
     let oracleText = card.oracleText ?
@@ -102,28 +102,43 @@ export function fixCardNames(cardDB: CardDB) {
 
         const document = editor.document;
         const lines: string[] = document.getText().split(lineSplitterRegExp);
+        var numReplaced: number = 0;
         for (const [lineNum, line] of lines.entries()) {
-            console.log(`line ${lineNum}: ${line}`)
             try {
                 var cardLine = await parseCardLine(line, cardDB);
             } catch (e) {
-                console.log(`not card line`);
                 continue;
             }
 
-            // name already correct
-            if (cardLine.name == cardLine.card.name) {
-                console.log(`already correct`);
-                continue;
+            // fix name
+            if (cardLine.name != cardLine.card.name) {
+                const lineRange = document.lineAt(lineNum).range;
+
+                const lineStr = document.lineAt(lineNum).text;
+                const newLineStr = lineStr.replace(cardNameReplaceExp, `$1${cardLine.card.name}$2`)
+
+                await editor.edit(edit => edit.replace(lineRange, newLineStr));
+                numReplaced++;
+                console.log(`replaced name @ line ${lineNum}: ${cardLine.name} -> ${cardLine.card.name}`);
             }
 
-            const lineStr = document.lineAt(lineNum).text;
-            const lineRange = document.lineAt(lineNum).range;
-            console.log(`correcting at ${lineRange}`);
+            // fix collector number
+            if (cardLine.collectorNumber != cardLine.card.collectorNumber) {
+                const lineRange = document.lineAt(lineNum).range;
 
-            const newLineStr = lineStr.replace(cardNameReplaceExp, `$1${cardLine.card.name}$2`)
+                const lineStr = document.lineAt(lineNum).text;
+                const newLineStr = lineStr.replace(cardCollNoReplaceExp, `$1 ${cardLine.card.collectorNumber}$2`);
 
-            await editor.edit(edit => edit.replace(lineRange, newLineStr));
+                console.log(cardCollNoReplaceExp.exec(lineStr));
+                console.log(lineStr);
+                console.log(newLineStr);
+
+                await editor.edit(edit => edit.replace(lineRange, newLineStr));
+                numReplaced++;
+                console.log(`replaced cn @ line ${lineNum}: ${cardLine.collectorNumber} -> ${cardLine.card.collectorNumber}`);
+            }
+
         }
+        console.log(`total elements replaced: ${numReplaced}`);
     }
 }

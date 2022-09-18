@@ -36,8 +36,8 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
                 infos.push(`${card.name}`);
             }
             // if no [set collno] specified, add to decoration
-            if (!cardLine.set) {
-                if (!cardLine.collectorNumber)
+            if (!cardLine.collectorNumber) {
+                if (!cardLine.set)
                     infos.push(`[${card.set} ${card.collectorNumber}]`);
                 else
                     infos.push(`[${card.collectorNumber}]`);
@@ -45,12 +45,9 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
             if (card.manaCost) {
                 infos.push(card.manaCost);
             } else if (card.cardFaces) {
-                infos.push(
-                    card.cardFaces.map(
-                        cardFace => cardFace.manaCost
-                    ).filter(
-                        manaCost => manaCost !== undefined && manaCost.length > 0
-                    ).join(' // '));
+                infos.push(card.cardFaces.map(cardFace => cardFace.manaCost)
+                    .filter(manaCost => manaCost !== undefined && manaCost.length > 0)
+                    .join(' // '));
             }
             if (card.typeLine) {
                 infos.push(card.typeLine);
