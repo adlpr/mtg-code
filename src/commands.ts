@@ -17,15 +17,17 @@ function getHTMLImagesLine(card: Card): string | undefined {
         card.cardFaces?.map(cardFace => `<img src="${cardFace.imageUris?.small}" alt="image of ${cardFace.name}" title="${cardFace.oracleText?.replace(/\"/g, "'")}"/>`).join('');
 }
 
-export function getUsdPrice(card: Card, foil: boolean=false): string | null {
-    if (card.prices?.usdFoil && (foil || (card.prices?.usd == null)))
+export function getUsdPrice(card: Card, foil: boolean=false, etched: boolean=false): string | null {
+    if (card.prices?.usdEtched && (etched || ((card.prices?.usd == null) && (card.prices?.usdFoil == null))))
+        return card.prices?.usdEtched;
+    else if (card.prices?.usdFoil && (foil || (card.prices?.usd == null)))
         return card.prices?.usdFoil;
     else if (card.prices?.usd)
         return card.prices?.usd;
     return null
 }
 
-export function getEurPrice(card: Card, foil: boolean=false): string | null {
+export function getEurPrice(card: Card, foil: boolean=false, etched: boolean=false): string | null {
     if (card.prices?.eurFoil && (foil || (card.prices?.eur == null)))
         return card.prices?.eurFoil;
     else if (card.prices?.eur)

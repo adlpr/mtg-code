@@ -56,7 +56,7 @@ export async function setCardDecorations(editor: vscode.TextEditor, cardDB: Card
                 infos.push(`${card.power}/${card.toughness}`);
             }
             if (card.prices) {
-                const usdPrice = getUsdPrice(card, !!/\bfoil\b/.exec(cardLine.miscInfo));
+                const usdPrice = getUsdPrice(card, !!/\bfoil\b/.exec(cardLine.miscInfo), !!/\betched\b/.exec(cardLine.miscInfo));
                 infos.push(usdPrice ? `$${usdPrice}` : "$na");
             }
             const infoStr = infos.join(' · ');
