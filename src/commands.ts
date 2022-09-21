@@ -28,7 +28,9 @@ export function getUsdPrice(card: Card, foil: boolean=false, etched: boolean=fal
 }
 
 export function getEurPrice(card: Card, foil: boolean=false, etched: boolean=false): string | null {
-    if (card.prices?.eurFoil && (foil || (card.prices?.eur == null)))
+    if (card.prices?.eurEtched && (etched || ((card.prices?.eur == null) && (card.prices?.eurFoil == null))))
+        return card.prices?.eurEtched;
+    else if (card.prices?.eurFoil && (foil || (card.prices?.eur == null)))
         return card.prices?.eurFoil;
     else if (card.prices?.eur)
         return card.prices?.eur;
