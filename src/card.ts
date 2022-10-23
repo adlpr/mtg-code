@@ -88,6 +88,8 @@ export interface Card {
     preview?: Preview;
     relatedUris?: RelatedUris;
     purchaseUris?: PurchaseUris;
+    contentWarning?: boolean;
+    attractionLights?: number[];
 }
 
 export interface AllPart {
@@ -398,7 +400,6 @@ const typeMap: any = {
         { json: "frame", js: "frame", typ: u(undefined, "") },
         { json: "frame_effects", js: "frameEffects", typ: u(undefined, a("")) },
         { json: "security_stamp", js: "securityStamp", typ: u(undefined, "") },
-        
         { json: "full_art", js: "fullArt", typ: u(undefined, true) },
         { json: "textless", js: "textless", typ: u(undefined, true) },
         { json: "booster", js: "booster", typ: u(undefined, true) },
@@ -410,6 +411,8 @@ const typeMap: any = {
         { json: "preview", js: "preview", typ: u(undefined, r("Preview")) },
         { json: "related_uris", js: "relatedUris", typ: u(undefined, r("RelatedUris")) },
         { json: "purchase_uris", js: "purchaseUris", typ: u(undefined, r("PurchaseUris")) },
+        { json: "content_warning", js: "contentWarning", typ: u(undefined, true) },
+        { json: "attraction_lights", js: "attractionLights", typ: u(undefined, a(0)) },
     ], false),
     "AllPart": o([
         { json: "object", js: "object", typ: u(undefined, "") },
