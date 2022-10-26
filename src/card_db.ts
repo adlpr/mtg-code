@@ -181,7 +181,8 @@ export class CardDB {
                     cardResp = await request.get('https://api.scryfall.com/cards/named', { qs: params, throwResponseError: true });
                 } else {
                     // for lines with collector numbers, use /:code/:number endpt
-                    var url = `https://api.scryfall.com/cards/${setCode}/${collectorNumber}`;
+                    // encode required for coll nos with a star
+                    var url = `https://api.scryfall.com/cards/${setCode}/${encodeURIComponent(collectorNumber)}`;
                     if (lang)
                         url += '/' + lang;
                     cardResp = await request.get(url, { throwResponseError: true });
