@@ -1,6 +1,7 @@
 # mtg-code
 
 This is an extension for building Magic the Gathering decks in VSCode.
+
 ## Features
 
 * Autocompletion while typing card names. Also adds basic information about each card in your decklist.
@@ -14,6 +15,11 @@ This is an extension for building Magic the Gathering decks in VSCode.
 ## Known Issues
 
 ## Release Notes
+
+### 1.1.1
+
+* Fix compatibility with Attractions, content warning cards, and collector numbers with a star
+* WSL environment compatibility
 
 ### 1.1.0
 

@@ -20,9 +20,15 @@ const languageID: string = 'mtg';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
-	if (!fs.existsSync('./card_db')) {
+	// change cwd for wsl compatibility
+	var last_cwd = process.cwd();
+	if (last_cwd.startsWith('/mnt/c/'))
+		process.chdir('/tmp');
+	if (!fs.existsSync('./card_db'))
 		fs.mkdirSync('./card_db');
-	}
+	// wsl: change back
+	if (last_cwd.startsWith('/mnt/c/'))
+		process.chdir(last_cwd);
 	var cardDB: CardDB = new CardDB('./card_db');
 	await cardDB.isReady;
 
