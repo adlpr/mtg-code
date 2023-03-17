@@ -16,6 +16,11 @@ This is an extension for building Magic the Gathering decks in VSCode.
 
 ## Release Notes
 
+### 1.1.2
+
+* API updates: PreDH and Oathbreaker legalities
+* Add language configuration file
+
 ### 1.1.1
 
 * Fix compatibility with Attractions, content warning cards, and collector numbers with a star

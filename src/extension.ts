@@ -24,6 +24,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	var last_cwd = process.cwd();
 	if (last_cwd.startsWith('/mnt/c/'))
 		process.chdir('/tmp');
+	console.log(`loading card db from cwd: ${process.cwd()}`);
 	if (!fs.existsSync('./card_db'))
 		fs.mkdirSync('./card_db');
 	// wsl: change back
@@ -31,6 +32,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		process.chdir(last_cwd);
 	var cardDB: CardDB = new CardDB('./card_db');
 	await cardDB.isReady;
+	console.log(`card db is ready`);
 
 	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.search-cards', searchCards(cardDB)));
 	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.fix-card-names', fixCardNames(cardDB)));

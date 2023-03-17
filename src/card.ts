@@ -469,6 +469,8 @@ const typeMap: any = {
         { json: "duel", js: "duel", typ: u(undefined, "") },
         { json: "oldschool", js: "oldschool", typ: u(undefined, "") },
         { json: "premodern", js: "premodern", typ: u(undefined, "") },
+        { json: "predh", js: "predh", typ: u(undefined, "") },
+        { json: "oathbreaker", js: "oathbreaker", typ: u(undefined, "") },
     ], false),
     "Preview": o([
         { json: "source", js: "source", typ: u(undefined, "") },

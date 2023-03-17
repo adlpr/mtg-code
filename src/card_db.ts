@@ -195,14 +195,16 @@ export class CardDB {
             try {
                 newCard = Convert.toCard(cardJSONStr);
             } catch (e) {
+                console.log(`failed to parse card information from scryfall api: ${e}\n\nJSON String:\n\n${cardJSONStr}`);
                 throw Error(`failed to parse card information from scryfall api: ${e}\n\nJSON String:\n\n${cardJSONStr}`);
             }
             this.cards.set(cardKeyStr, newCard);
             if (setCode && collectorNumber)
                 this.cards.set(nameWildCardKeyStr, newCard);
             return newCard;
-        } else
+        } else {
             return card;
+        }
     }
 
     searchCardNamesFuzzy(searchStr: string): fuzzy.FilterResult<string>[] {
