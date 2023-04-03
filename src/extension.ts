@@ -2,18 +2,18 @@
 
 'use strict';
 import * as fs from 'fs';
-import { stringify } from 'querystring';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { CardDB } from './card_db';
-import { CardLine, getNumberOfCards, parseCardLine } from './card_statistics';
+import { CardLine, getNumberOfCards, parseCardLine, getManaCostDistribution, renderManaCostDistributionToString, computeMeanManaCost } from './card_statistics';
 import { CardSearchLensProvider } from './code_lens_providers';
-import { fixCardNames, searchCards } from './commands';
+import { fixCardNames, searchCards, showCardRulings } from './commands';
 import { CardCompletionItemProvider, SearchCompletionItemProvider } from './completion_providers';
 import { setCardDecorations } from './decorators';
 import { CardHoverProvider } from './hover_providers';
 import { FixCardNameCodeActionProvider, refreshCardDiagnostics } from './diagnostics';
+import { CommentLineFoldingRangeProvider } from './folding_range_providers';
 
 const languageID: string = 'mtg';
 
@@ -36,6 +36,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.search-cards', searchCards(cardDB)));
 	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.fix-card-names', fixCardNames(cardDB)));
+	context.subscriptions.push(vscode.commands.registerCommand('mtg-code.show-card-rulings', showCardRulings(cardDB)));
 
 	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz '\":/<>=".split("");
 
@@ -44,7 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerCompletionItemProvider(
 			languageID,
 			new SearchCompletionItemProvider(
-				['c', 'color', 'id', 'identity', 'commander', 't', 'type', 'o', 'oracle', 'm', 'mana', 'mv', 'manavalue', 'is', 'devotion', 'produces', 'pow', 'power', 'tou', 'toughness', 'pt', 'powtou', 'loyalty', 'loy', 'r', 'rarity', 'new', 'in', 's', 'set', 'e', 'edition', 'cn', 'number', 'b', 'block', 'st', 'cube', 'f', 'format', 'banned', 'restricted', 'usd', 'eur', 'tix', 'cheapest', 'a', 'artist', 'artists', 'ft', 'flavor', 'wm', 'watermark', 'has', 'illustrations', 'border', 'frame', 'game', 'year', 'art', 'atag', 'arttag', 'function', 'otag', 'oracletag', 'not', 'prints', 'paperprints', 'papersets', 'sets', 'lang', 'language', 'order', 'direction'],
+				['c', 'color', 'id', 'identity', 'commander', 't', 'type', 'o', 'oracle', 'm', 'mana', 'mv', 'manavalue', 'cmc', 'is', 'devotion', 'produces', 'pow', 'power', 'tou', 'toughness', 'pt', 'powtou', 'loyalty', 'loy', 'r', 'rarity', 'new', 'in', 's', 'set', 'e', 'edition', 'cn', 'number', 'b', 'block', 'st', 'cube', 'f', 'format', 'banned', 'restricted', 'usd', 'eur', 'tix', 'cheapest', 'a', 'artist', 'artists', 'ft', 'flavor', 'wm', 'watermark', 'has', 'illustrations', 'border', 'frame', 'game', 'year', 'art', 'atag', 'arttag', 'function', 'otag', 'oracletag', 'not', 'prints', 'paperprints', 'papersets', 'sets', 'lang', 'language', 'order', 'direction'],
 				new Map([
 					['type', cardDB.getAllTypes()],
 					['color', cardDB.getAllColorCombinations()],
@@ -71,7 +72,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(vscode.languages.registerHoverProvider(languageID, new CardHoverProvider(cardDB)));
-	// context.subscriptions.push(vscode.languages.registerHoverProvider(languageID, new CardSearchHoverProvider(cardDB)));
 
 	context.subscriptions.push(vscode.languages.registerCodeLensProvider(languageID, new CardSearchLensProvider()));
 
@@ -90,7 +90,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	// TODO: On selection change compute stats: num. cards, mana distribution, type distribution.
 	let statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 	context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(async (e) => {
 		let cardLines: CardLine[] = [];
@@ -113,13 +112,21 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 
 		const numCardsInSelection = getNumberOfCards(cardLines);
-		statusBarItem.text = `${numCardsInSelection} cards`;
 
-		if (numCardsInSelection > 0) {
-			statusBarItem.show();
-		} else {
+		if (numCardsInSelection === 0) {
 			statusBarItem.hide();
+			return;
 		}
+
+		let statusText = `${numCardsInSelection} cards`;
+
+		const manaCostDistribution = getManaCostDistribution(cardLines);
+		if (manaCostDistribution.length !== 0) {
+			statusText += `; avg. cmc=${computeMeanManaCost(manaCostDistribution).toFixed(1)}`;
+		}
+
+		statusBarItem.text = statusText;
+		statusBarItem.show();
 	}));
 
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor((e) => {
@@ -139,6 +146,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerCodeActionsProvider(languageID, new FixCardNameCodeActionProvider(cardDB), {
 			providedCodeActionKinds: FixCardNameCodeActionProvider.providedCodeActionKinds
 		})
+	);
+
+	context.subscriptions.push(
+		vscode.languages.registerFoldingRangeProvider(languageID, new CommentLineFoldingRangeProvider())
 	);
 
 	const editors = vscode.window.visibleTextEditors.filter((editor) => editor.document.languageId === languageID);

@@ -16,6 +16,18 @@ This is an extension for building Magic the Gathering decks in VSCode.
 
 ## Release Notes
 
+### 1.2.0
+
+* Merge upstream ([PixR2/1.1.0](https://github.com/PixR2/mtg-code/blob/master/CHANGELOG.md#110---2023-03-04)):
+	* Added
+		* Show average converted mana cost of cards in selection in the status bar.
+		* Folding ranges for all blocks starting with a comment line (comment or search line).
+		* Command to show a card's rulings.
+		* Syntax highlighting support for 'or' and parenthesis.
+	* Fixed
+		* Syntax highlighting for quoted fields.
+		* Prevent the extension from breaking in case new fields are added to scryfall's API.
+
 ### 1.1.2
 
 * API updates: PreDH and Oathbreaker legalities

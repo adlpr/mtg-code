@@ -17,6 +17,24 @@ function getMarkdownImagesLine(card: Card): string | undefined {
     return `[${markdownImagesLine}](${card.scryfallURI})`
 }
 
+function getRulingsLine(card: Card): string | undefined {
+    if (card.name === undefined) {
+        return undefined;
+    }
+
+    if (card.rulingsURI === undefined) {
+        return undefined;
+    }
+
+    const args = [card.name];
+    const showRulingsCommandUri = vscode.Uri.parse(
+        `command:mtg-code.show-card-rulings?${encodeURIComponent(JSON.stringify(args))}`
+    );
+
+    const rulingsLine = `[Show Rulings](${showRulingsCommandUri})`;
+    return rulingsLine;
+}
+
 export class CardHoverProvider implements vscode.HoverProvider {
     cardDB: CardDB;
 

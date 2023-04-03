@@ -33,7 +33,6 @@ export class CardCompletionItemProvider implements vscode.CompletionItemProvider
     }
 }
 
-// TODO: Completion provider for search lines.
 export class SearchCompletionItemProvider implements vscode.CompletionItemProvider {
     searchParameters: string[];
     searchParameterVocabularies: Map<string, string[]>;

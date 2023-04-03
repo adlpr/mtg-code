@@ -2,7 +2,7 @@
 	"name": "mtg-code",
 	"displayName": "mtg-code",
 	"description": "This Visual Studio Code extension adds tools for building decklists for Magic the Gathering.",
-	"version": "1.1.2",
+	"version": "1.2.0",
 	"repository": {"url": "https://github.com/PixR2/mtg-code"},
 	"publisher": "johannes-radmer",
 	"engines": {
@@ -14,7 +14,8 @@
 	"activationEvents": [
 		"onLanguage:mtg",
 		"onCommand:mtg-code.search-cards",
-		"onCommand:mtg-code.fix-card-names"
+		"onCommand:mtg-code.fix-card-names",
+		"onCommand:mtg-code.show-card-rulings"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -46,7 +47,14 @@
 			{
 				"command": "mtg-code.fix-card-names",
 				"title": "Fix Card Names",
-				"category": "mtg"
+				"category": "mtg",
+				"when": "editorLangId == mtg"
+			},
+			{
+				"command": "mtg-code.show-card-rulings",
+				"title": "Show Card Rulings",
+				"category": "mtg",
+				"when": "editorLangId == mtg"
 			}
 		]
 	},
