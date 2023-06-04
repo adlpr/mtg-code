@@ -16,6 +16,10 @@ This is an extension for building Magic the Gathering decks in VSCode.
 
 ## Release Notes
 
+### 1.2.1
+
+* Add total USD price to status bar
+
 ### 1.2.0
 
 * Merge upstream ([PixR2/1.1.0](https://github.com/PixR2/mtg-code/blob/master/CHANGELOG.md#110---2023-03-04)):

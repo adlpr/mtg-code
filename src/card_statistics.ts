@@ -1,6 +1,7 @@
 import { CommentThreadCollapsibleState, TextEditorRevealType } from "vscode";
 import { Card } from "./card";
 import { CardDB } from "./card_db";
+import { getUsdPrice } from './commands';
 import { cardLineRegExp } from "./regular_expressions";
 
 export class CardLine {
@@ -94,6 +95,25 @@ export function getManaCostDistribution(cardLines: CardLine[]): number[] {
     }
 
     return cardDistribution;
+}
+
+export function getTotalPrice(cardLines: CardLine[]): number {
+    if (cardLines.length === 0) {
+        return 0;
+    }
+
+    const totalPrice = cardLines
+        .map((cardLine) => {
+            return parseFloat(
+                getUsdPrice(
+                    cardLine.card,
+                    !!/\bfoil\b/.exec(cardLine.miscInfo),
+                    !!/\betched\b/.exec(cardLine.miscInfo)
+                ) || '0'
+            ); })
+        .reduce((sum, current) => sum + current, 0);
+
+    return totalPrice;
 }
 
 export function renderManaCostDistributionToString(manaCostDistribution: number[]): string {

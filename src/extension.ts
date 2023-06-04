@@ -6,7 +6,7 @@ import * as fs from 'fs';
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { CardDB } from './card_db';
-import { CardLine, getNumberOfCards, parseCardLine, getManaCostDistribution, renderManaCostDistributionToString, computeMeanManaCost } from './card_statistics';
+import { CardLine, getNumberOfCards, parseCardLine, getManaCostDistribution, renderManaCostDistributionToString, computeMeanManaCost, getTotalPrice } from './card_statistics';
 import { CardSearchLensProvider } from './code_lens_providers';
 import { fixCardNames, searchCards, showCardRulings } from './commands';
 import { CardCompletionItemProvider, SearchCompletionItemProvider } from './completion_providers';
@@ -121,9 +121,12 @@ export async function activate(context: vscode.ExtensionContext) {
 		let statusText = `${numCardsInSelection} cards`;
 
 		const manaCostDistribution = getManaCostDistribution(cardLines);
-		if (manaCostDistribution.length !== 0) {
+		if (manaCostDistribution.length !== 0)
 			statusText += `; avg. cmc=${computeMeanManaCost(manaCostDistribution).toFixed(1)}`;
-		}
+
+		const totalCost = getTotalPrice(cardLines);
+		if (totalCost > 0)
+			statusText += `; total price=$${totalCost.toFixed(2)}`;
 
 		statusBarItem.text = statusText;
 		statusBarItem.show();
