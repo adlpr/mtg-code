@@ -16,6 +16,10 @@ This is an extension for building Magic the Gathering decks in VSCode.
 
 ## Release Notes
 
+### 1.2.2
+
+* Add printed-name fixing to card fix command
+
 ### 1.2.1
 
 * Add total USD price to status bar

@@ -3,7 +3,10 @@ import * as vscode from 'vscode';
 import { Card } from './card';
 import { CardDB } from './card_db';
 import { parseCardLine } from './card_statistics';
-import { cardLineRegExp, lineSplitterRegExp, cardNameReplaceExp, cardCollNoReplaceExp } from './regular_expressions';
+import {
+    cardLineRegExp, lineSplitterRegExp,
+    cardNameReplaceExp, cardCollNoReplaceExp, cardPrintedNameReplaceExp
+} from './regular_expressions';
 import { Ruling } from './card_rulings';
 
 function getHTMLImagesLine(card: Card): string | undefined {
@@ -121,10 +124,10 @@ export function fixCardNames(cardDB: CardDB) {
                 continue;
             }
 
+            const lineRange = document.lineAt(lineNum).range;
+
             // fix name
             if (cardLine.name != cardLine.card.name) {
-                const lineRange = document.lineAt(lineNum).range;
-
                 const lineStr = document.lineAt(lineNum).text;
                 const newLineStr = lineStr.replace(cardNameReplaceExp, `$1${cardLine.card.name}$2`)
 
@@ -135,18 +138,22 @@ export function fixCardNames(cardDB: CardDB) {
 
             // fix collector number
             if (cardLine.collectorNumber != cardLine.card.collectorNumber) {
-                const lineRange = document.lineAt(lineNum).range;
-
                 const lineStr = document.lineAt(lineNum).text;
                 const newLineStr = lineStr.replace(cardCollNoReplaceExp, `$1 ${cardLine.card.collectorNumber}$2`);
-
-                console.log(cardCollNoReplaceExp.exec(lineStr));
-                console.log(lineStr);
-                console.log(newLineStr);
 
                 await editor.edit(edit => edit.replace(lineRange, newLineStr));
                 numReplaced++;
                 console.log(`replaced cn @ line ${lineNum}: ${cardLine.collectorNumber} -> ${cardLine.card.collectorNumber}`);
+            }
+
+            // fix printed name
+            if (cardLine.card.printedName !== null && cardLine.card.name != cardLine.card.printedName) {
+                const lineStr = document.lineAt(lineNum).text;
+                const newLineStr = lineStr.replace(cardPrintedNameReplaceExp, `$1 = ${cardLine.card.printedName}]`);
+
+                await editor.edit(edit => edit.replace(lineRange, newLineStr));
+                numReplaced++;
+                console.log(`set printed name @ line ${lineNum}: ${cardLine.card.printedName}`);
             }
 
         }

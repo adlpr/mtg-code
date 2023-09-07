@@ -96,6 +96,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		for (const selection of e.selections) {
 			for (let l = selection.start.line; l <= selection.end.line; l++) {
 				const lineStr = e.textEditor.document.lineAt(l).text;
+				// ignore comments even where parsable as card lines
+				if (lineStr.startsWith('//'))
+					continue;
 				try {
 					var cardLine = await parseCardLine(lineStr, cardDB);
 					cardLines.push(cardLine);
