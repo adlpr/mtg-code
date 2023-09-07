@@ -147,7 +147,7 @@ export function fixCardNames(cardDB: CardDB) {
             }
 
             // fix printed name
-            if (cardLine.card.printedName !== null && cardLine.card.name != cardLine.card.printedName) {
+            if (cardLine.card.printedName !== undefined && cardLine.card.name != cardLine.card.printedName) {
                 const lineStr = document.lineAt(lineNum).text;
                 const newLineStr = lineStr.replace(cardPrintedNameReplaceExp, `$1 = ${cardLine.card.printedName}]`);
 
