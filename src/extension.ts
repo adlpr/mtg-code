@@ -121,6 +121,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
+
 		let statusText = `${numCardsInSelection} cards`;
 
 		const manaCostDistribution = getManaCostDistribution(cardLines);
